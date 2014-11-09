@@ -5,7 +5,7 @@
 
 # FRAGMENT id=bash-completion-prog-hints completer=1 for=cpanm
 
-use 5.010;
+use 5.010001;
 use strict;
 use warnings;
 
@@ -138,11 +138,17 @@ GetOptionsWithCompletion(
 
 =head1 SYNOPSIS
 
-In your bash startup file:
+To install, install this module and then in your bash (and/or bash startup
+file):
 
  complete -C _cpanm cpanm
 
-or, you can use L<bash-complete-program>.
+or, you can use L<bash-complete-program> to manage the above for you.
+
+Now L<cpanm> has bash completion:
+
+ % cpanm --s<tab>
+ % cpanm --uninstall "Text::A<tab>
 
 
 =head1 TODO
