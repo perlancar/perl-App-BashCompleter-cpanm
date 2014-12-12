@@ -3,7 +3,7 @@
 # DATE
 # VERSION
 
-# FRAGMENT id=bash-completion-prog-hints completer=1 for=cpanm
+# FRAGMENT id=shcompgen-hint completer=1 for=cpanm
 
 use 5.010001;
 use strict;
