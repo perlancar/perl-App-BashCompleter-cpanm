@@ -1,10 +1,10 @@
-package App::BashCompleter::cpanm;
+package App::ShellCompleter::cpanm;
 
 # DATE
 # VERSION
 
 1;
-# ABSTRACT: Bash completion for cpanm
+# ABSTRACT: Shell completion for cpanm
 
 =head1 SYNOPSIS
 
@@ -15,5 +15,4 @@ See L<_cpanm> included in this distribution.
 
 L<Bash::Completion::Plugins::cpanm>, which focuses on completing module name
 remotely using MetaCPAN API. This module, on the other hand, focuses on
-completing C<cpanm> command-line options. Remote module completion is not
-implemented yet.
+completing C<cpanm> command-line options.
