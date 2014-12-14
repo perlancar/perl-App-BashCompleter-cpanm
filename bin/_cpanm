@@ -8,12 +8,13 @@
 use 5.010001;
 use strict;
 use warnings;
+use Log::Any '$log';
 
 use Complete::Util qw(complete_array_elem complete_file);
 use Getopt::Long::Complete qw(GetOptionsWithCompletion);
 use List::MoreUtils qw(uniq);
 
-die "This script is for bash completion only\n"
+die "This script is for shell completion only\n"
     unless $ENV{COMP_LINE};
 
 my $noop = sub {};
@@ -21,30 +22,65 @@ my $noop = sub {};
 # complete with list of installed modules
 my $comp_installed_mods = sub {
     require Complete::Module;
-    Complete::Module::complete_module(word=>$_[0]);
+
+    my %args = @_;
+
+    $log->tracef("Adding completion: installed modules");
+    Complete::Module::complete_module(
+        word => $args{word},
+        ci   => 1,
+    );
 };
 
 # complete with installable stuff
 my $comp_installable = sub {
     require Complete::Module;
-    [uniq(sort(
-        # tarballs & dirs
+    require XPAN::Query;
+
+    my %args = @_;
+    my $word   = $args{word} // '';
+    my $mirror = $args{mirror}; # XXX support multiple mirrors
+
+    my @res;
+
+    $log->tracef("Adding completion: tarballs & dirs");
+    push @res,
         @{ complete_file(
             filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
-            word   => $_[0],
-        ) },
-        # installed modules (e.g. when upgrading)
-        @{ Complete::Module::complete_module(
-            word   => $_[0],
-        ) },
-        # TODO module name can be suffixed with '@<version>'
-        # TODO: remote stuffs?
-    ))];
+            word   => $word,
+            ci     => 1,
+        ) };
+
+    $log->tracef("Adding completion: installed modules (e.g. when upgrading)");
+    push @res, @{ Complete::Module::complete_module(
+        word   => $word,
+        ci     => 1,
+    ) };
+
+    $log->tracef("Adding completion: modules from CPAN mirror");
+    push @res, grep {
+        if ($word =~ /:\z/) {
+            /\A\Q$word\E:+[^:]+(::)?\z/i;
+        } else {
+            /\A\Q$word\E[^:]*\z/i;
+        }} @{
+            XPAN::Query::list_xpan_modules(
+                url   => $mirror,
+                query => $word . '%',
+            )};
+
+    # TODO module name can be suffixed with '@<version>'
+
+    [uniq(sort(@res))];
 };
 
 my $comp_file = sub {
-    require Complete::Util;
-    Complete::Util::complete_file(word=>$_[0]);
+    my %args = @_;
+
+    complete_file(
+        word => $args{word},
+        ci   => 1,
+    );
 };
 
 # this is taken from App::cpanminus::script and should be updated from time to
@@ -55,15 +91,18 @@ GetOptionsWithCompletion(
         my $type      = $args{type};
         my $word      = $args{word};
         if ($type eq 'arg') {
+            $log->tracef("Completing arg");
             my $seen_opts = $args{seen_opts};
             if ($seen_opts->{'--uninstall'} || $seen_opts->{'--reinstall'}) {
-                return $comp_installed_mods->($word);
+                return $comp_installed_mods->(word=>$word);
             } else {
-                return $comp_installable->($word);
+                return $comp_installable->(
+                    word=>$word, mirror=>$seen_opts->{'--mirror'});
             }
         } elsif ($type eq 'optval') {
             my $ospec = $args{ospec};
             my $opt   = $args{opt};
+            $log->tracef("Completing optval (opt=$opt)");
             if ($ospec eq 'l|local-lib=s' ||
                     $ospec eq 'L|local-lib-contained=s') {
                 return complete_file(filter=>'d', word=>$word);
