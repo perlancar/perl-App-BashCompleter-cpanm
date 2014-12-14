@@ -1,5 +1,17 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.03    2014-12-14 (PERLANCAR)
+
+        - Rename module/dist from App-BashCompleter-cpanm to
+          App-ShellCompleter-cpanm.
+
+        - Mention shcompgen instead of the obsolete bash-completion-prog.
+
+        - Complete module names on CPAN using XPAN::Query.
+
+        - Add some logging for debugging.
+
+
 0.02    2014-11-10 (PERLANCAR)
 
         - No functional changes.
