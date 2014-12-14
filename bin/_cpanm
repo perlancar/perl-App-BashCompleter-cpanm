@@ -172,8 +172,8 @@ GetOptionsWithCompletion(
     #$self->build_args_handlers,
 );
 
-# ABSTRACT: Completer for cpanm
-# PODNAME: _cpanm
+# ABSTRACT: Shell completer for cpanm
+# PODNAME:
 
 =head1 SYNOPSIS
 
@@ -182,7 +182,7 @@ file):
 
  complete -C _cpanm cpanm
 
-or, you can use L<bash-complete-program> to manage the above for you.
+or, you can use L<shcompgen> to do that for you automatically.
 
 Now L<cpanm> has bash completion:
 
