@@ -28,7 +28,6 @@ my $comp_installed_mods = sub {
     $log->tracef("Adding completion: installed modules");
     Complete::Module::complete_module(
         word => $args{word},
-        ci   => 1,
     );
 };
 
