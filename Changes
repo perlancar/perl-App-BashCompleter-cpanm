@@ -1,5 +1,12 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.04    2014-12-29 (PERLANCAR)
+
+        - No functional changes.
+
+        - Remove FAQ item because we now have a workaround in Complete::Bash.
+
+
 0.03    2014-12-14 (PERLANCAR)
 
         - Rename module/dist from App-BashCompleter-cpanm to
