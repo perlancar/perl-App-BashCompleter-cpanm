@@ -194,12 +194,4 @@ Now L<cpanm> has bash completion:
 
 =head1 FAQ
 
-=head2 Why does "Foo::Bar" complete to "Foo::Foo::Bar"?
-
-That is, when we want to complete a module name that contains a double colon,
-the completion repeats the full module name instead of completing it.
-
-Colon is problematic because by default it is a word breaking character in bash.
-This means, in this command. The workaround is to use quotes, e.g.:
-
  % cpanm -U "Text:<tab>
