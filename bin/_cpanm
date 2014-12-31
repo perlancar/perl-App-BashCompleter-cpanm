@@ -42,28 +42,41 @@ my $comp_installable = sub {
     my @answers;
 
     $log->tracef("Adding completion: tarballs & dirs");
-    push @answers, complete_file(
-        filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
-        word   => $word,
-    );
+    {
+        my $answer = complete_file(
+            filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
+            word   => $word,
+        );
+        $log->tracef("  answer: %s", $answer);
+        push @answers, $answer;
+    }
 
     $log->tracef("Adding completion: installed modules (e.g. when upgrading)");
-    push @answers, Complete::Module::complete_module(
-        word   => $word,
-    );
+    {
+        my $answer = Complete::Module::complete_module(
+            word   => $word,
+        );
+        $log->tracef("  answer: %s", $answer);
+        push @answers, $answer;
+    }
 
     $log->tracef("Adding completion: modules from CPAN mirror");
-    push @answers, [grep {
-        if ($word =~ /:\z/) {
-            /\A\Q$word\E:+[^:]+(::)?\z/i;
-        } else {
-            /\A\Q$word\E[^:]*\z/i;
-        }} @{
-            XPAN::Query::list_xpan_modules(
-                url   => $mirror,
-                query => $word . '%',
-            )}
-    ];
+    {
+        my $mods = XPAN::Query::list_xpan_modules(
+            url   => $mirror,
+            query => $word . '%',
+        );
+        #$log->tracef("all mods: %s", $mods);
+        my $answer = [grep {
+                if ($word =~ /::\z/) {
+                    /\A\Q$word\E[^:]+(::)?\z/i
+                } else {
+                    /\A\Q$word\E[^:]*(::)?\z/i
+                }
+        } @$mods];
+        $log->tracef("  answer: %s", $answer);
+        push @answers, $answer;
+    }
 
     # TODO module name can be suffixed with '@<version>'
 
