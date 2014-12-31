@@ -10,9 +10,8 @@ use strict;
 use warnings;
 use Log::Any '$log';
 
-use Complete::Util qw(complete_array_elem complete_file);
+use Complete::Util qw(complete_array_elem complete_file combine_answers);
 use Getopt::Long::Complete qw(GetOptionsWithCompletion);
-use List::MoreUtils qw(uniq);
 
 die "This script is for shell completion only\n"
     unless $ENV{COMP_LINE};
@@ -40,24 +39,21 @@ my $comp_installable = sub {
     my $word   = $args{word} // '';
     my $mirror = $args{mirror}; # XXX support multiple mirrors
 
-    my @res;
+    my @answers;
 
     $log->tracef("Adding completion: tarballs & dirs");
-    push @res,
-        @{ complete_file(
-            filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
-            word   => $word,
-            ci     => 1,
-        ) };
+    push @answers, complete_file(
+        filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
+        word   => $word,
+    );
 
     $log->tracef("Adding completion: installed modules (e.g. when upgrading)");
-    push @res, @{ Complete::Module::complete_module(
+    push @answers, Complete::Module::complete_module(
         word   => $word,
-        ci     => 1,
-    ) };
+    );
 
     $log->tracef("Adding completion: modules from CPAN mirror");
-    push @res, grep {
+    push @answers, [grep {
         if ($word =~ /:\z/) {
             /\A\Q$word\E:+[^:]+(::)?\z/i;
         } else {
@@ -66,11 +62,12 @@ my $comp_installable = sub {
             XPAN::Query::list_xpan_modules(
                 url   => $mirror,
                 query => $word . '%',
-            )};
+            )}
+    ];
 
     # TODO module name can be suffixed with '@<version>'
 
-    [uniq(sort(@res))];
+    combine_answers(@answers);
 };
 
 my $comp_file = sub {
