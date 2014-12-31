@@ -1,5 +1,10 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.06    2014-12-31 (PERLANCAR)
+
+	- Tweak logging, fix completion of CPAN modules.
+
+
 0.05    2014-12-31 (PERLANCAR)
 
 	- Fix/update code (use combine_answers).
