@@ -198,10 +198,3 @@ Now L<cpanm> has bash completion:
  % cpanm --s<tab>
  % cpanm --uninstall "Text::A<tab>
 
-
-=head1 TODO
-
-
-=head1 FAQ
-
- % cpanm -U "Text:<tab>
