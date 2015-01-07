@@ -1,5 +1,11 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.07    2015-01-07 (PERLANCAR)
+
+	- [opt] Don't bother to complete module names if word doesn't look
+	  like module name.
+
+
 0.06    2014-12-31 (PERLANCAR)
 
 	- Tweak logging, fix completion of CPAN modules.
