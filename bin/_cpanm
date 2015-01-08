@@ -48,8 +48,8 @@ my $comp_installable = sub {
 
     my @answers;
 
-    $log->tracef("Adding completion: tarballs & dirs");
     {
+        $log->tracef("Adding completion: tarballs & dirs");
         my $answer = complete_file(
             filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
             word   => $word,
@@ -58,8 +58,9 @@ my $comp_installable = sub {
         push @answers, $answer;
     }
 
-    $log->tracef("Adding completion: installed modules (e.g. when upgrading)");
     if ($looks_like_completing_module) {
+        $log->tracef("Adding completion: installed modules ".
+                         "(e.g. when upgrading)");
         my $answer = Complete::Module::complete_module(
             word   => $word,
         );
@@ -67,8 +68,8 @@ my $comp_installable = sub {
         push @answers, $answer;
     }
 
-    $log->tracef("Adding completion: modules from CPAN mirror");
     if ($looks_like_completing_module) {
+        $log->tracef("Adding completion: modules from CPAN mirror");
         my $mods = XPAN::Query::list_xpan_modules(
             url   => $mirror,
             query => $word . '%',
