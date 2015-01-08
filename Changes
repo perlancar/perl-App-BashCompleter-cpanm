@@ -1,5 +1,13 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.08    2015-01-08 (PERLANCAR)
+
+        - Disable the use of XPAN::Query (completing available CPAN modules) for
+          now due to slow initial response time.
+
+        - [Bugfix][minor] Move log messages inside conditionals.
+
+
 0.07    2015-01-07 (PERLANCAR)
 
 	- [opt] Don't bother to complete module names if word doesn't look
