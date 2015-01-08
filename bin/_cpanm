@@ -33,7 +33,6 @@ my $comp_installed_mods = sub {
 # complete with installable stuff
 my $comp_installable = sub {
     require Complete::Module;
-    require XPAN::Query;
 
     my %args = @_;
     my $word   = $args{word} // '';
@@ -42,7 +41,7 @@ my $comp_installable = sub {
     # if user already types something that looks like a path instead of module
     # name, like '../' or perhaps 'C:\' (windows) then don't bother to complete
     # with module name because it will just delay things without getting any
-    # result
+    # result.
     my $looks_like_completing_module =
         $word eq '' || $word =~ /\A(\w+)(::\w+)*/;
 
@@ -68,7 +67,15 @@ my $comp_installable = sub {
         push @answers, $answer;
     }
 
-    if ($looks_like_completing_module) {
+    # currently disabled, i don't like the slow initial time with XPAN::Query
+    # (when it's downloading 02packages). plus PerlIO::gzip (which XPAN::Query
+    # uses) currently fails to build on perl 5.20. ideally we will use a remote
+    # service that will quickly returns list of matching PAUSE ids,
+    # package/module names, and dist names (CPANDB, XPAN::Query, and
+    # MetaCPAN::Client are not ideal because the response time is not
+    # conveniently quick enough).
+    if (0 && $looks_like_completing_module) {
+        #require XPAN::Query;
         $log->tracef("Adding completion: modules from CPAN mirror");
         my $mods = XPAN::Query::list_xpan_modules(
             url   => $mirror,
