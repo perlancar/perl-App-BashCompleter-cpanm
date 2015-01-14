@@ -1,5 +1,11 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.09    2015-01-14 (PERLANCAR)
+
+	- Complete from App::lcpan if it's installed (I'm still not happy
+	  with the response time though, there's still a noticeable delay).
+
+
 0.08    2015-01-08 (PERLANCAR)
 
         - Disable the use of XPAN::Query (completing available CPAN modules) for
