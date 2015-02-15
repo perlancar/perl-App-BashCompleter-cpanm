@@ -130,7 +130,6 @@ my $comp_file = sub {
 
     complete_file(
         word => $args{word},
-        ci   => 1,
     );
 };
 
