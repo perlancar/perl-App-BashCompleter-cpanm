@@ -44,7 +44,7 @@ my $comp_installable = sub {
     # with module name because it will just delay things without getting any
     # result.
     my $looks_like_completing_module =
-        $word eq '' || $word =~ /\A(\w+)(::\w+)*/;
+        $word eq '' || $word =~ /\A(\w+)(::\w+)*(::)?\z/;
 
     my @answers;
 
@@ -76,9 +76,14 @@ my $comp_installable = sub {
     # setup such completion-oriented web service myself. stay tuned.
     {
         no warnings 'once';
+        use experimental 'smartmatch';
+
+        # completing an empty word still takes at least 3-4s here, due to almost
+        # 10k results. so we skip it for now.
+        last unless length($word);
 
         last unless $looks_like_completing_module;
-        eval { require App::lcpan }; last if $@;
+        eval "use App::lcpan 0.32"; last if $@;
         $log->tracef("Adding completion: modules from local CPAN mirror");
 
         require Perinci::CmdLine::Util::Config;
@@ -96,28 +101,35 @@ my $comp_installable = sub {
         $res = Perinci::CmdLine::Util::Config::get_args_from_config(
             config => $config,
             args   => \%lcpanargs,
-            subcommand_name => 'update-index',
-            meta   => $App::lcpan::SPEC{update_local_cpan_index},
+            #subcommand_name => 'update',
+            meta   => $App::lcpan::SPEC{update},
         );
         unless ($res->[0] == 200) {
             $log->tracef("Can't get args from config: %s", $res);
             last;
         }
         App::lcpan::_set_args_default(\%lcpanargs);
-        my $mods = App::lcpan::list_local_cpan_modules(
-            %lcpanargs,
-            query => $word . '%',
-        );
-        #$log->tracef("all mods: %s", $mods);
-        my $answer = [grep {
-                if ($word =~ /::\z/) {
-                    /\A\Q$word\E[^:]+(::)?\z/i
-                } else {
-                    /\A\Q$word\E[^:]*(::)?\z/i
-                }
-        } @$mods];
-        $log->tracef("  answer: %s", $answer);
-        push @answers, $answer;
+        my $dbh = App::lcpan::_connect_db('ro', $lcpanargs{cpan}, $lcpanargs{index_name});
+        my $sth;
+        my $num_sep = 0; while ($word =~ /::/g) { $num_sep++ }
+        if ($word eq '') {
+            $sth = $dbh->prepare("SELECT name,has_child FROM namespace WHERE name='$word' OR (name LIKE '$word%' AND num_sep=$num_sep) ORDER BY name");
+        } else {
+            $sth = $dbh->prepare("SELECT name,has_child FROM namespace WHERE name LIKE '$word%' AND num_sep=$num_sep ORDER BY name");
+        }
+        $sth->execute;
+        my @mods;
+        while (my @row = $sth->fetchrow_array) {
+            my $mod = $row[0];
+            $mod =~ s!::!/!g unless $word =~ /::/;
+            push @mods, $mod unless @mods ~~ $mod;
+            if ($row[1]) {
+                $mod .= ($word =~ /::/ ? '::' : '/');
+                push @mods, $mod unless @mods ~~ $mod;
+            }
+        };
+        #$log->tracef("  answer: %s", \@mods);
+        push @answers, \@mods;
     }
 
     # TODO module name can be suffixed with '@<version>'
@@ -238,4 +250,3 @@ Now L<cpanm> has bash completion:
 
  % cpanm --s<tab>
  % cpanm --uninstall "Text::A<tab>
-
