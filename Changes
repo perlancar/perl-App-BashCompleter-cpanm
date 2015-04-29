@@ -1,5 +1,13 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.11    2015-04-30 (PERLANCAR)
+
+	- Fixes/tweaks (update for lcpan 0.16+, use new 'namespace' table
+	  in lcpan 0.32+ for speedier query).
+
+	- Don't specify ci explicitly (Complete 0.06+).
+
+
 0.10    2015-02-15 (PERLANCAR)
 
 	- Support tcsh.
