@@ -28,6 +28,7 @@ my $comp_installed_mods = sub {
     $log->tracef("Adding completion: installed modules");
     Complete::Module::complete_module(
         word => $args{word},
+        path_sep => '::',
     );
 };
 
@@ -62,7 +63,8 @@ my $comp_installable = sub {
         $log->tracef("Adding completion: installed modules ".
                          "(e.g. when upgrading)");
         my $answer = Complete::Module::complete_module(
-            word   => $word,
+            word     => $word,
+            path_sep => '::',
         );
         $log->tracef("  answer: %s", $answer);
         push @answers, $answer;
@@ -121,10 +123,9 @@ my $comp_installable = sub {
         my @mods;
         while (my @row = $sth->fetchrow_array) {
             my $mod = $row[0];
-            $mod =~ s!::!/!g unless $word =~ /::/;
             push @mods, $mod unless @mods ~~ $mod;
             if ($row[1]) {
-                $mod .= ($word =~ /::/ ? '::' : '/');
+                $mod .= '::';
                 push @mods, $mod unless @mods ~~ $mod;
             }
         };
