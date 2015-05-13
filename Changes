@@ -1,5 +1,11 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.12    2015-05-13 (PERLANCAR)
+
+	- Don't use '/' as module namespace separator because cpanm doesn't
+	  recognize it.
+
+
 0.11    2015-04-30 (PERLANCAR)
 
 	- Fixes/tweaks (update for lcpan 0.16+, use new 'namespace' table
