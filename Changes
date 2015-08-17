@@ -1,5 +1,12 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.13    2015-08-17 (PERLANCAR)
+
+	- No functional changes.
+
+	- Switch from Log::Any to Log::Any::IfLOG.
+
+
 0.12    2015-05-13 (PERLANCAR)
 
 	- Don't use '/' as module namespace separator because cpanm doesn't
