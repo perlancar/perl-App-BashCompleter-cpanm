@@ -9,7 +9,7 @@
 use 5.010001;
 use strict;
 use warnings;
-use Log::Any '$log';
+use Log::Any::IfLOG '$log';
 
 use Complete::Util qw(complete_array_elem complete_file combine_answers);
 use Getopt::Long::Complete qw(GetOptionsWithCompletion);
