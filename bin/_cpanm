@@ -11,7 +11,8 @@ use strict;
 use warnings;
 use Log::Any::IfLOG '$log';
 
-use Complete::Util qw(complete_array_elem complete_file combine_answers);
+use Complete::File qw(complete_file);
+use Complete::Util qw(complete_array_elem combine_answers);
 use Getopt::Long::Complete qw(GetOptionsWithCompletion);
 
 die "This script is for shell completion only\n"
