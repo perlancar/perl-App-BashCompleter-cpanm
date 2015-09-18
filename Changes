@@ -1,5 +1,11 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.14    2015-09-18 (PERLANCAR)
+
+	- Adjust to Complete::Util 0.36 (complete_file() split to
+	  Complete-File).
+
+
 0.13    2015-08-17 (PERLANCAR)
 
 	- No functional changes.
