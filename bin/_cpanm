@@ -12,7 +12,7 @@ use warnings;
 use Log::Any::IfLOG '$log';
 
 use Complete::File qw(complete_file);
-use Complete::Util qw(complete_array_elem combine_answers);
+use Complete::Util qw(complete_array_elem);
 use Getopt::Long::Complete qw(GetOptionsWithCompletion);
 
 die "This script is for shell completion only\n"
@@ -26,7 +26,7 @@ my $comp_installed_mods = sub {
 
     my %args = @_;
 
-    $log->tracef("Adding completion: installed modules");
+    $log->tracef("[_cpanm] Adding completion: installed modules");
     Complete::Module::complete_module(
         word => $args{word},
         path_sep => '::',
@@ -39,55 +39,38 @@ my $comp_installable = sub {
 
     my %args = @_;
     my $word   = $args{word} // '';
-    my $mirror = $args{mirror}; # XXX support multiple mirrors
+
+    # first, we try the cheapest method first, which is local files
+    {
+        $log->tracef("[_cpanm] Trying completion: tarballs & dirs");
+        local $Complete::Common::OPT_FUZZY = 0;
+        local $Complete::Common::OPT_WORD_MODE = 0;
+        local $Complete::Common::OPT_CHAR_MODE = 0;
+        my $answer = complete_file(
+            filter => sub { $log->tracef("  $_"); /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
+            word   => $word,
+        );
+        return {words=>$answer, path_sep=>"/"} if @$answer;
+    }
+
+    # if that fails, and the word looks like the start of module name, try
+    # searching for CPAN module. currently we only query local CPAN for speed.
 
     # if user already types something that looks like a path instead of module
     # name, like '../' or perhaps 'C:\' (windows) then don't bother to complete
     # with module name because it will just delay things without getting any
     # result.
-    my $looks_like_completing_module =
-        $word eq '' || $word =~ /\A(\w+)(::\w+)*(::)?\z/;
-
-    my @answers;
-
     {
-        $log->tracef("Adding completion: tarballs & dirs");
-        my $answer = complete_file(
-            filter => sub { /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
-            word   => $word,
-        );
-        $log->tracef("  answer: %s", {words=>$answer, path_sep=>'/'});
-        push @answers, $answer;
-    }
-
-    if ($looks_like_completing_module) {
-        $log->tracef("Adding completion: installed modules ".
-                         "(e.g. when upgrading)");
-        my $answer = Complete::Module::complete_module(
-            word     => $word,
-            path_sep => '::',
-        );
-        $log->tracef("  answer: %s", $answer);
-        push @answers, $answer;
-    }
-
-    # currently we only complete from local CPAN (App::lcpan) if it's available.
-    # for remote service, ideally we will need a remote service that quickly
-    # returns list of matching PAUSE ids, package/module names, and dist names
-    # (CPANDB, XPAN::Query, and MetaCPAN::Client are not ideal because the
-    # response time is not conveniently quick enough). i probably will need to
-    # setup such completion-oriented web service myself. stay tuned.
-    {
+        last unless $word eq '' || $word =~ /\A(\w+)(::\w+)*(::)?\z/;
         no warnings 'once';
         use experimental 'smartmatch';
 
-        # completing an empty word still takes at least 3-4s here, due to almost
-        # 10k results. so we skip it for now.
-        last unless length($word);
-
-        last unless $looks_like_completing_module;
-        eval "use App::lcpan 0.32"; last if $@;
-        $log->tracef("Adding completion: modules from local CPAN mirror");
+        eval "use App::lcpan 0.32";
+        if ($@) {
+            $log->tracef("[_cpanm] App::lcpan not available, skipped ".
+                             "trying to complete from CPAN module names");
+            last;
+        }
 
         require Perinci::CmdLine::Util::Config;
 
@@ -96,7 +79,7 @@ my $comp_installable = sub {
             program_name => "lcpan",
         );
         unless ($res->[0] == 200) {
-            $log->tracef("Can't get config for lcpan: %s", $res);
+            $log->tracef("[_cpanm] Can't get config for lcpan: %s", $res);
             last;
         }
         my $config = $res->[2];
@@ -108,7 +91,7 @@ my $comp_installable = sub {
             meta   => $App::lcpan::SPEC{update},
         );
         unless ($res->[0] == 200) {
-            $log->tracef("Can't get args from config: %s", $res);
+            $log->tracef("[_cpanm] Can't get args from config: %s", $res);
             last;
         }
         App::lcpan::_set_args_default(\%lcpanargs);
@@ -130,21 +113,12 @@ my $comp_installable = sub {
                 push @mods, $mod unless @mods ~~ $mod;
             }
         };
-        #$log->tracef("  answer: %s", \@mods);
-        push @answers, \@mods;
+        return \@mods if @mods;
     }
 
     # TODO module name can be suffixed with '@<version>'
 
-    combine_answers(@answers);
-};
-
-my $comp_file = sub {
-    my %args = @_;
-
-    complete_file(
-        word => $args{word},
-    );
+    [];
 };
 
 # this is taken from App::cpanminus::script and should be updated from time to
@@ -155,7 +129,7 @@ GetOptionsWithCompletion(
         my $type      = $args{type};
         my $word      = $args{word};
         if ($type eq 'arg') {
-            $log->tracef("Completing arg");
+            $log->tracef("[_cpanm] Completing arg");
             my $seen_opts = $args{seen_opts};
             if ($seen_opts->{'--uninstall'} || $seen_opts->{'--reinstall'}) {
                 return $comp_installed_mods->(word=>$word);
@@ -166,7 +140,7 @@ GetOptionsWithCompletion(
         } elsif ($type eq 'optval') {
             my $ospec = $args{ospec};
             my $opt   = $args{opt};
-            $log->tracef("Completing optval (opt=$opt)");
+            $log->tracef("[_cpanm] Completing optval (opt=$opt)");
             if ($ospec eq 'l|local-lib=s' ||
                     $ospec eq 'L|local-lib-contained=s') {
                 return complete_file(filter=>'d', word=>$word);
@@ -251,4 +225,5 @@ or, you can use L<shcompgen> to do that for you automatically.
 Now L<cpanm> has bash completion:
 
  % cpanm --s<tab>
+ % cpanm -n Bencher::<tab>
  % cpanm --uninstall "Text::A<tab>
