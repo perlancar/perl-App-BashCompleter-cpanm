@@ -1,5 +1,13 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.15    2016-01-14 (PERLANCAR)
+
+	- Fix/tweak: local files should be consulted first because it's the
+	  cheapest, then CPAN module names.
+
+	- Bump prereq version Log::Any::IfLOG to 0.07.
+
+
 0.14    2015-09-18 (PERLANCAR)
 
 	- Adjust to Complete::Util 0.36 (complete_file() split to
