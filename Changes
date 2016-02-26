@@ -1,5 +1,12 @@
 Revision history for App-ShellCompleter-cpanm
 
+0.16    2016-02-26 (PERLANCAR)
+
+	- No functional changes.
+
+	- [dist] Specify an optional prereq to App::lcpan.
+
+
 0.15    2016-01-14 (PERLANCAR)
 
 	- Fix/tweak: local files should be consulted first because it's the
