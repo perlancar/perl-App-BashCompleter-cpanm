@@ -1,3 +1,9 @@
+0.18    2017-06-17 (PERLANCAR)
+
+	- Observe SCRIPT_MODE to complete with list of scripts instead of
+	  module names, for lcpanm-script.
+
+
 0.17    2016-10-21 (PERLANCAR)
 
 	- Allow script to be dumped by Getopt::Long::Dump.
