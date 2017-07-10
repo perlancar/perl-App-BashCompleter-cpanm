@@ -9,7 +9,7 @@
 use 5.010001;
 use strict;
 use warnings;
-use Log::Any::IfLOG '$log';
+use Log::ger;
 
 use Complete::File qw(complete_file);
 use Complete::Util qw(complete_array_elem);
@@ -25,7 +25,7 @@ sub _connect_lcpan {
 
     eval "use App::lcpan 0.32";
     if ($@) {
-        $log->tracef("[_cpanm] App::lcpan not available, skipped ".
+        log_trace("[_cpanm] App::lcpan not available, skipped ".
                          "trying to complete from CPAN module names");
         return;
     }
@@ -37,7 +37,7 @@ sub _connect_lcpan {
         program_name => "lcpan",
     );
     unless ($res->[0] == 200) {
-        $log->tracef("[_cpanm] Can't get config for lcpan: %s", $res);
+        log_trace("[_cpanm] Can't get config for lcpan: %s", $res);
         last;
     }
     my $config = $res->[2];
@@ -49,7 +49,7 @@ sub _connect_lcpan {
         meta   => $App::lcpan::SPEC{update},
     );
     unless ($res->[0] == 200) {
-        $log->tracef("[_cpanm] Can't get args from config: %s", $res);
+        log_trace("[_cpanm] Can't get args from config: %s", $res);
         return;
     }
     App::lcpan::_set_args_default(\%lcpanargs);
@@ -62,7 +62,7 @@ my $comp_installed_mods = sub {
 
     my %args = @_;
 
-    $log->tracef("[_cpanm] Adding completion: installed modules");
+    log_trace("[_cpanm] Adding completion: installed modules");
     Complete::Module::complete_module(
         word => $args{word},
         path_sep => '::',
@@ -98,12 +98,12 @@ my $comp_installable = sub {
 
     # first, we try the cheapest method first, which is local files
     {
-        $log->tracef("[_cpanm] Trying completion: tarballs & dirs");
+        log_trace("[_cpanm] Trying completion: tarballs & dirs");
         local $Complete::Common::OPT_FUZZY = 0;
         local $Complete::Common::OPT_WORD_MODE = 0;
         local $Complete::Common::OPT_CHAR_MODE = 0;
         my $answer = complete_file(
-            filter => sub { $log->tracef("  $_"); /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
+            filter => sub { log_trace("  $_"); /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
             word   => $word,
         );
         return {words=>$answer, path_sep=>"/"} if @$answer;
@@ -155,7 +155,7 @@ GetOptionsWithCompletion(
         my $type      = $args{type};
         my $word      = $args{word};
         if ($type eq 'arg') {
-            $log->tracef("[_cpanm] Completing arg");
+            log_trace("[_cpanm] Completing arg");
             my $seen_opts = $args{seen_opts};
             if ($seen_opts->{'--uninstall'} || $seen_opts->{'--reinstall'}) {
                 return $comp_installed_mods->(word=>$word);
@@ -166,7 +166,7 @@ GetOptionsWithCompletion(
         } elsif ($type eq 'optval') {
             my $ospec = $args{ospec};
             my $opt   = $args{opt};
-            $log->tracef("[_cpanm] Completing optval (opt=$opt)");
+            log_trace("[_cpanm] Completing optval (opt=$opt)");
             if ($ospec eq 'l|local-lib=s' ||
                     $ospec eq 'L|local-lib-contained=s') {
                 return complete_file(filter=>'d', word=>$word);
