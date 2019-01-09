@@ -71,8 +71,6 @@ my $comp_installed_mods = sub {
 
 # complete with installable stuff
 my $comp_installable = sub {
-    require Complete::Module;
-
     my %args = @_;
     my $word   = $args{word} // '';
 
