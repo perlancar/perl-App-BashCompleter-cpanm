@@ -12,7 +12,7 @@ use warnings;
 use Log::ger;
 
 use Complete::File qw(complete_file);
-use Complete::Util qw(complete_array_elem);
+use Complete::Util qw(answer_has_entries complete_array_elem);
 use Getopt::Long::Complete qw(GetOptionsWithCompletion);
 
 die "This script is for shell completion only\n"
@@ -104,7 +104,6 @@ my $comp_installable = sub {
             filter => sub { log_trace("  $_"); /\.(zip|tar\.gz|tar\.bz2)$/i || (-d $_) },
             word   => $word,
         );
-        return {words=>$answer, path_sep=>"/"} if @$answer;
     }
 
     # if that fails, and the word looks like the start of module name, try
