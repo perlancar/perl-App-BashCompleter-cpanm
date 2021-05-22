@@ -243,6 +243,8 @@ sub run_completer {
 1;
 # ABSTRACT: Shell completion for cpanm
 
+=for Pod::Coverage ^(.+)$
+
 =head1 SYNOPSIS
 
 See L<_cpanm> included in this distribution.
